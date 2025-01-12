@@ -29,7 +29,7 @@ namespace MTTA
             // Create and configure the OpenFileDialog
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Image Files|.jpg;.jpeg;.png;.bmp;.gif|All Files|.*",  // Image file filter
+                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif|All Files|*.*",
                 Title = "Select an Image"
             };
 
@@ -68,7 +68,7 @@ namespace MTTA
                 // See https://stackoverflow.com/questions/38567100/failed-to-initialise-tesseract-engine-cant-find-correct-version for copy always setting
 
                 // Todo: Add the Tesseract.Drawing NuGet package to support interop with System.Drawing in .NET Core, for instance to allow passing Bitmap to Tesseract
-                using (var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default))
+                using (var engine = new TesseractEngine(@"./tessdata", "jpn", EngineMode.Default))
                 {
                     using (var img = Pix.LoadFromFile(imagePath))
                     {
