@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
+﻿using System.Windows;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace MTTA
 {
@@ -19,26 +8,18 @@ namespace MTTA
     /// </summary>
     public partial class ImageWindow : Window
     {
-        private string _filePath;
-        private BitmapImage _originalImage;
+        private BitmapSource _originalImage;
 
-        public ImageWindow(string filePath)
+        public ImageWindow(BitmapSource imageSource)
         {
             InitializeComponent();
-
-            _filePath = filePath;
-
-            ResizeImage();
+            _originalImage = imageSource;
+            ImageViewer.Source = _originalImage;
         }
 
         // This method is called when the window has been fully loaded
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Load the image (you can replace the path with a file picker or any logic)
-            _originalImage = new BitmapImage(new Uri(_filePath));
-            ImageViewer.Source = _originalImage;
-
-            // Resize the image once the window is loaded
             ResizeImage();
         }
 

@@ -11,9 +11,16 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
 using Tesseract;
+using System.Windows.Media.Media3D;
 
 namespace MTTA
 {
+    public class OcrResult
+    {
+        public System.Windows.Rect BoundingBox { get; set; }
+        public string Text { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -39,16 +46,29 @@ namespace MTTA
                 // Get the selected file path
                 string selectedFilePath = openFileDialog.FileName;
 
-                PerformOCR(selectedFilePath);
+                List<OcrResult> ocrResults = PerformOCR(selectedFilePath);
 
                 // Create a new window and display the image
-                var newWindow = new ImageWindow(selectedFilePath);
-                newWindow.Show();
+                BitmapImage bitmapImage = new BitmapImage(new Uri(selectedFilePath));
+                BitmapSource finalImage = DrawRectanglesOnImage(bitmapImage, ocrResults, Brushes.Red, 2);
+                ImageWindow window = new ImageWindow(finalImage);
+                window.Show();
+
+                // show text results
+                foreach (OcrResult ocrResult in ocrResults)
+                {
+                    MessageBox.Show($"OCR Result:\n\nText: {ocrResult.Text}",
+                    "OCR Result",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                }
             }
         }
 
-        private void PerformOCR(string imagePath)
+        private List<OcrResult> PerformOCR(string imagePath)
         {
+            var results = new List<OcrResult>();
+
             try
             {
                 // Initialize the Tesseract OCR engine
@@ -77,19 +97,13 @@ namespace MTTA
                 do
                 {
                     string ocrText = itr.GetText(PageIteratorLevel.Block);
-
-                    // Try to get the bounding box for the Block
                     if (itr.TryGetBoundingBox(PageIteratorLevel.Block, out var boundingBox))
                     {
-                        int x = boundingBox.X1;
-                        int y = boundingBox.Y1;
-                        int width = boundingBox.Width;
-                        int height = boundingBox.Height;
-
-                        MessageBox.Show($"OCR Result:\n\nText: {ocrText}\nBoundingBox: X={x}, Y={y}, Width={width}, Height={height}",
-                                        "OCR Result",
-                                        MessageBoxButton.OK,
-                                        MessageBoxImage.Information);
+                        results.Add(new OcrResult
+                        {
+                            Text = ocrText,
+                            BoundingBox = new System.Windows.Rect(boundingBox.X1, boundingBox.Y1, boundingBox.Width, boundingBox.Height)
+                        });
                     }
                     else
                     {
@@ -102,6 +116,38 @@ namespace MTTA
             {
                 MessageBox.Show($"Error during OCR process: {ex.Message}", "OCR Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+            return results;
+        }
+
+        private BitmapSource DrawRectanglesOnImage(BitmapImage originalImage, List<OcrResult> ocrResults, Brush rectangleBrush, double rectangleThickness)
+        {
+            // Convert BitmapImage to a DrawingVisual for rendering
+            var visual = new DrawingVisual();
+            using (DrawingContext drawingContext = visual.RenderOpen())
+            {
+                // Draw the original image
+                drawingContext.DrawImage(originalImage, new System.Windows.Rect(0, 0, originalImage.PixelWidth, originalImage.PixelHeight));
+
+                // Draw each rectangle
+                foreach (var ocrResult in ocrResults)
+                {
+                    var rectanglePen = new Pen(rectangleBrush, rectangleThickness);
+                    drawingContext.DrawRectangle(null, rectanglePen, ocrResult.BoundingBox);
+                }
+            }
+
+            // Render the visual into a new BitmapSource
+            var renderTarget = new RenderTargetBitmap(
+                originalImage.PixelWidth,
+                originalImage.PixelHeight,
+                originalImage.DpiX,
+                originalImage.DpiY,
+                PixelFormats.Pbgra32
+            );
+            renderTarget.Render(visual);
+
+            return renderTarget;
         }
     }
 }
