@@ -67,19 +67,36 @@ namespace MTTA
                 // See https://github.com/charlesw/tesseract/ --> "Getting started quickly"
                 // See https://stackoverflow.com/questions/38567100/failed-to-initialise-tesseract-engine-cant-find-correct-version for copy always setting
 
-                // Todo: Add the Tesseract.Drawing NuGet package to support interop with System.Drawing in .NET Core, for instance to allow passing Bitmap to Tesseract
-                using (var engine = new TesseractEngine(@"./tessdata", "jpn", EngineMode.Default))
-                {
-                    using (var img = Pix.LoadFromFile(imagePath))
-                    {
-                        // Perform OCR and get the text result
-                        var result = engine.Process(img);
-                        string ocrText = result.GetText();
+                using var engine = new TesseractEngine(@"./tessdata", "jpn", EngineMode.Default);
+                engine.DefaultPageSegMode = PageSegMode.SparseTextOsd; // Use SparseText for scattered entries
+                using var img = Pix.LoadFromFile(imagePath);
+                using var result = engine.Process(img);
 
-                        // Show the OCR result in a MessageBox
-                        MessageBox.Show($"OCR Result:\n\n{ocrText}", "OCR Result", MessageBoxButton.OK, MessageBoxImage.Information);
+                var itr = result.GetIterator();
+                itr.Begin();
+                do
+                {
+                    string ocrText = itr.GetText(PageIteratorLevel.Block);
+
+                    // Try to get the bounding box for the Block
+                    if (itr.TryGetBoundingBox(PageIteratorLevel.Block, out var boundingBox))
+                    {
+                        int x = boundingBox.X1;
+                        int y = boundingBox.Y1;
+                        int width = boundingBox.Width;
+                        int height = boundingBox.Height;
+
+                        MessageBox.Show($"OCR Result:\n\nText: {ocrText}\nBoundingBox: X={x}, Y={y}, Width={width}, Height={height}",
+                                        "OCR Result",
+                                        MessageBoxButton.OK,
+                                        MessageBoxImage.Information);
                     }
-                }
+                    else
+                    {
+                        MessageBox.Show("No bounding box found for this block.", "OCR Result", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+
+                } while (itr.Next(PageIteratorLevel.Block));
             }
             catch (Exception ex)
             {
