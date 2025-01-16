@@ -12,6 +12,7 @@ using System.Windows.Shapes;
 using Microsoft.Win32;
 using Tesseract;
 using System.Windows.Media.Media3D;
+using System.Diagnostics;
 
 namespace MTTA
 {
@@ -19,6 +20,7 @@ namespace MTTA
     {
         public System.Windows.Rect BoundingBox { get; set; }
         public string Text { get; set; }
+        public float Confidence { get; set; }
     }
 
     /// <summary>
@@ -26,6 +28,8 @@ namespace MTTA
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const double MINIMUM_CONFIDENCE_THRESHOLD = 50.0;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -50,17 +54,26 @@ namespace MTTA
 
                 // Create a new window and display the image
                 BitmapImage bitmapImage = new BitmapImage(new Uri(selectedFilePath));
-                BitmapSource finalImage = DrawRectanglesOnImage(bitmapImage, ocrResults, Brushes.Red, 2);
+                var finalImage = DrawRectanglesOnImage(
+                    bitmapImage,
+                    ocrResults,
+                    Brushes.Red,
+                    2.0,
+                    new Typeface("Arial"),
+                    24,
+                    Brushes.Blue
+                );
                 ImageWindow window = new ImageWindow(finalImage);
                 window.Show();
 
                 // show text results
                 foreach (OcrResult ocrResult in ocrResults)
                 {
-                    MessageBox.Show($"OCR Result:\n\nText: {ocrResult.Text}",
-                    "OCR Result",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    //MessageBox.Show($"OCR Result:\n\nText: {ocrResult.Text}",
+                    //"OCR Result",
+                    //MessageBoxButton.OK,
+                    //MessageBoxImage.Information);
+                    Debug.WriteLine(ocrResult.Text);
                 }
             }
         }
@@ -87,7 +100,7 @@ namespace MTTA
                 // See https://github.com/charlesw/tesseract/ --> "Getting started quickly"
                 // See https://stackoverflow.com/questions/38567100/failed-to-initialise-tesseract-engine-cant-find-correct-version for copy always setting
 
-                using var engine = new TesseractEngine(@"./tessdata", "jpn", EngineMode.Default);
+                using var engine = new TesseractEngine(@"./tessdata", "jpn_vert", EngineMode.Default);
                 engine.DefaultPageSegMode = PageSegMode.SparseTextOsd; // Use SparseText for scattered entries
                 using var img = Pix.LoadFromFile(imagePath);
                 using var result = engine.Process(img);
@@ -97,13 +110,18 @@ namespace MTTA
                 do
                 {
                     string ocrText = itr.GetText(PageIteratorLevel.Block);
+                    float confidence = itr.GetConfidence(PageIteratorLevel.Block);
                     if (itr.TryGetBoundingBox(PageIteratorLevel.Block, out var boundingBox))
                     {
-                        results.Add(new OcrResult
+                        if (confidence > MINIMUM_CONFIDENCE_THRESHOLD)
                         {
-                            Text = ocrText,
-                            BoundingBox = new System.Windows.Rect(boundingBox.X1, boundingBox.Y1, boundingBox.Width, boundingBox.Height)
-                        });
+                            results.Add(new OcrResult
+                            {
+                                Text = ocrText,
+                                Confidence = confidence,
+                                BoundingBox = new System.Windows.Rect(boundingBox.X1, boundingBox.Y1, boundingBox.Width, boundingBox.Height)
+                            });
+                        }
                     }
                     else
                     {
@@ -120,7 +138,14 @@ namespace MTTA
             return results;
         }
 
-        private BitmapSource DrawRectanglesOnImage(BitmapImage originalImage, List<OcrResult> ocrResults, Brush rectangleBrush, double rectangleThickness)
+        private BitmapSource DrawRectanglesOnImage(
+            BitmapImage originalImage,
+            List<OcrResult> ocrResults,
+            Brush rectangleBrush,
+            double rectangleThickness,
+            Typeface textTypeface,
+            double fontSize,
+            Brush textBrush)
         {
             // Convert BitmapImage to a DrawingVisual for rendering
             var visual = new DrawingVisual();
@@ -134,6 +159,29 @@ namespace MTTA
                 {
                     var rectanglePen = new Pen(rectangleBrush, rectangleThickness);
                     drawingContext.DrawRectangle(null, rectanglePen, ocrResult.BoundingBox);
+
+                    // Create the text to display
+                    string confidenceValue = ocrResult.Confidence.ToString();
+                    if (!string.IsNullOrEmpty(confidenceValue))
+                    {
+                        var formattedText = new FormattedText(
+                            confidenceValue,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            System.Windows.FlowDirection.LeftToRight,
+                            textTypeface,
+                            fontSize,
+                            textBrush,
+                            VisualTreeHelper.GetDpi(visual).PixelsPerDip
+                        );
+
+                        // Position the text inside or next to the rectangle
+                        var textPosition = new System.Windows.Point(
+                            ocrResult.BoundingBox.Left + (ocrResult.BoundingBox.Width - formattedText.Width) / 2.0,
+                            ocrResult.BoundingBox.Top + (ocrResult.BoundingBox.Height - formattedText.Height) / 2.0
+                        );
+
+                        drawingContext.DrawText(formattedText, textPosition);
+                    }
                 }
             }
 
