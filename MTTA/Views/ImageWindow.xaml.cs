@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Media.Imaging;
 
-namespace MTTA
+namespace MTTA.Views
 {
     /// <summary>
     /// Interaction logic for ImageWindow.xaml

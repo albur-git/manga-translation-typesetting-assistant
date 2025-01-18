@@ -2,19 +2,18 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Drawing;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
 using Tesseract;
-using System.Windows.Media.Media3D;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using MTTA.ViewModels;
 
-namespace MTTA
+namespace MTTA.Views
 {
     public class OcrResult
     {
@@ -33,7 +32,17 @@ namespace MTTA
         public MainWindow()
         {
             InitializeComponent();
+            // For Information on which the MVVM implementation is based on, see: https://www.youtube.com/watch?v=4v8PobcZpqM
+            MainViewModel mainViewModel = new();
+            // Make data and commands from MainViewModel instance accessible in the MainWindow.xaml file, e.g through ItemsSource="{Binding TranslationEntries}" in a ListView or Command="{Binding ShowWindowCommand}" in a Button
+            this.DataContext = mainViewModel;  
         }
+
+
+
+
+        //--------------------------- Old Stuff --> Do not use events in MVVM
+        // Todo: Refactor
 
         private void buttonLoadImage_Click(object sender, RoutedEventArgs e)
         {
