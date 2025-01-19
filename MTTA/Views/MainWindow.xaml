@@ -10,7 +10,7 @@
 
     <Grid Background="#F5F5F5">
         <Grid Background="White" Grid.Row="1" Margin="25,40,25,15" >
-            <Button Height="30" x:Name="buttonLoadImage" Content="Load" Click="buttonLoadImage_Click"  Width="100" VerticalContentAlignment="Center" Padding="5" Margin="25" VerticalAlignment="Top" HorizontalAlignment="Left" BorderThickness="1" BorderBrush="#E0E0E0"  />
+            <Button Height="30" CommandParameter="{x:Reference Name=mainWindow}" Command="{Binding ShowImageWindowCommand}" Content="Load Image" Width="100" VerticalContentAlignment="Center" Padding="5" Margin="25" VerticalAlignment="Top" HorizontalAlignment="Left" BorderThickness="1" BorderBrush="#E0E0E0"  />
             <Button Height="30" CommandParameter="{x:Reference Name=mainWindow}" Command="{Binding ShowWindowCommand}"  Content="Add Entry" Width="100" VerticalContentAlignment="Center" Padding="5" Margin="25" VerticalAlignment="Top" HorizontalAlignment="Right" BorderThickness="1" BorderBrush="#E0E0E0"  />
             <ListView Name="TranslationEntryList" ItemsSource="{Binding TranslationEntries}" BorderBrush="#cdcdcd" Margin="25,70,25,25" Padding="0">
                 <ListView.View>
