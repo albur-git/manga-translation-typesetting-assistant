@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Win32;
-using MTTA.Views;
-using System.Windows.Media.Imaging;
+﻿using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.Windows;
 using Tesseract;
@@ -41,7 +33,7 @@ namespace MTTA.Models
             }
         }
 
-        public static BitmapSource getFinalImage()
+        public static BitmapImage getFinalImage()
         {
             // Todo: selectedFilePath and _ocrResults may be null here. --> Ensure processImage was called first?
             BitmapImage bitmapImage = new BitmapImage(new Uri(_selectedFilePath));
@@ -123,7 +115,7 @@ namespace MTTA.Models
             return results;
         }
 
-        private static BitmapSource DrawRectanglesOnImage(
+        private static BitmapImage DrawRectanglesOnImage(
              BitmapImage originalImage,
              List<OcrResult> ocrResults,
              Brush rectangleBrush,
@@ -180,7 +172,26 @@ namespace MTTA.Models
             );
             renderTarget.Render(visual);
 
-            return renderTarget;
+            return ConvertBitmapSourceToBitmapImage(renderTarget);
+        }
+
+        private static BitmapImage ConvertBitmapSourceToBitmapImage(BitmapSource bitmapSource)
+        {
+            using (var stream = new System.IO.MemoryStream())
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder(); // Use PNG or other format
+                encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+                encoder.Save(stream);
+
+                var bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.StreamSource = new System.IO.MemoryStream(stream.ToArray());
+                bitmapImage.EndInit();
+                bitmapImage.Freeze();  // Freeze for better performance in UI thread
+
+                return bitmapImage;
+            }
         }
     }
 }

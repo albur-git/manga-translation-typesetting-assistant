@@ -7,11 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         Name="mainWindow">
-
+    
     <Grid Background="#F5F5F5">
-        <Grid Background="White" Grid.Row="1" Margin="25,40,25,15" >
-            <Button Height="30" CommandParameter="{x:Reference Name=mainWindow}" Command="{Binding ShowImageWindowCommand}" Content="Load Image" Width="100" VerticalContentAlignment="Center" Padding="5" Margin="25" VerticalAlignment="Top" HorizontalAlignment="Left" BorderThickness="1" BorderBrush="#E0E0E0"  />
-            <Button Height="30" CommandParameter="{x:Reference Name=mainWindow}" Command="{Binding ShowWindowCommand}"  Content="Add Entry" Width="100" VerticalContentAlignment="Center" Padding="5" Margin="25" VerticalAlignment="Top" HorizontalAlignment="Right" BorderThickness="1" BorderBrush="#E0E0E0"  />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" Background="White" Grid.Row="1" Margin="25,40,25,15" >
+            <Button Height="30" CommandParameter="{x:Reference Name=mainWindow}" Command="{Binding LoadPageImageCommand}" Content="Load Image" Width="100" VerticalContentAlignment="Center" Padding="5" Margin="25" VerticalAlignment="Top" HorizontalAlignment="Left" BorderThickness="1" BorderBrush="#E0E0E0"  />
+            <Button Height="30" CommandParameter="{x:Reference Name=mainWindow}" Command="{Binding ShowAddTranslationWindowCommand}"  Content="Add Entry" Width="100" VerticalContentAlignment="Center" Padding="5" Margin="25" VerticalAlignment="Top" HorizontalAlignment="Right" BorderThickness="1" BorderBrush="#E0E0E0"  />
             <ListView Name="TranslationEntryList" ItemsSource="{Binding TranslationEntries}" BorderBrush="#cdcdcd" Margin="25,70,25,25" Padding="0">
                 <ListView.View>
                     <GridView>
@@ -50,30 +54,18 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         -->
-
                     </GridView>
                 </ListView.View>
             </ListView>
         </Grid>
+
+        <Canvas Grid.Column="1" Name ="PageCanvas">
+            <Image Source="{Binding PageImage, UpdateSourceTrigger=PropertyChanged}" 
+               Stretch="Uniform"
+               Width="{Binding ActualWidth, ElementName=PageCanvas}" 
+               Height="{Binding ActualHeight, ElementName=PageCanvas}" 
+               Canvas.Left="0" 
+               Canvas.Top="0"/>
+        </Canvas>
     </Grid>
-
-
-
-    <!--<StackPanel>
-        <ItemsControl ItemsSource="{Binding Items}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Margin="5">
-                        <TextBox Text="{Binding Text}" Width="200" Margin="5" />
-                        <Button Content="Action" Command="{Binding ActionCommand}" Margin="5" />
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-
-        <Button x:Name="buttonLoadImage" Content="Load" Click="buttonLoadImage_Click"  Margin="10" />
-        <Button Content="Add New Entry" Command="{Binding AddItemCommand}" Margin="10" />
-    </StackPanel>-->
-    
 </Window>

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -15,25 +10,36 @@ using MTTA.Views;
 
 namespace MTTA.ViewModels
 {
-    public class MainViewModel
+    public class MainViewModel : ObservableViewModelBase
     {
         public ObservableCollection<TranslationEntry> TranslationEntries { get; set; }
-        public ICommand ShowWindowCommand { get; set; }
-        public ICommand ShowImageWindowCommand { get; set; }
+        private BitmapImage _pageImage;
+        public BitmapImage PageImage
+        {
+            get => _pageImage;
+            set
+            {
+                _pageImage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ICommand ShowAddTranslationWindowCommand { get; set; }
+        public ICommand LoadPageImageCommand { get; set; }
 
         public MainViewModel()
         {
             TranslationEntries = TranslationEntryManager.GetTranslationEntries();
-            ShowWindowCommand = new RelayCommand(ShowWindow, CanShowWindow);
-            ShowImageWindowCommand = new RelayCommand(ShowImageWindow, CanShowImageWindow);
+            ShowAddTranslationWindowCommand = new RelayCommand(ShowAddTranslationWindow, CanShowAddTranslationWindow);
+            LoadPageImageCommand = new RelayCommand(LoadPageImage, CanLoadPageImage);
         }
 
-        private bool CanShowImageWindow(object obj)
+        private bool CanLoadPageImage(object obj)
         {
             return true;
         }
 
-        private void ShowImageWindow(object obj)
+        private void LoadPageImage(object obj)
         {
             var openFileDialog = new OpenFileDialog
             {
@@ -47,24 +53,15 @@ namespace MTTA.ViewModels
                 PageImageManager.processImage(openFileDialog.FileName);
             }
 
-            var mainWindow = obj as Window;
-            BitmapSource bitmapSource = PageImageManager.getFinalImage();
-            if (bitmapSource != null)
-            {
-                ImageWindow imageWindow = new(bitmapSource);
-                imageWindow.Owner = mainWindow;
-                imageWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                imageWindow.Show();
-            }
-
+            PageImage = PageImageManager.getFinalImage(); 
         }
 
-        private bool CanShowWindow(object obj)
+        private bool CanShowAddTranslationWindow(object obj)
         {
-            return true;    // Return true --> Command will always be invoced.
+            return true; 
         }
 
-        private void ShowWindow(object obj)
+        private void ShowAddTranslationWindow(object obj)
         {
             var mainWindow = obj as Window;
 
