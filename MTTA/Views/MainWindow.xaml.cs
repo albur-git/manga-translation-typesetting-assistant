@@ -109,7 +109,7 @@ namespace MTTA.Views
                 // See https://github.com/charlesw/tesseract/ --> "Getting started quickly"
                 // See https://stackoverflow.com/questions/38567100/failed-to-initialise-tesseract-engine-cant-find-correct-version for copy always setting
 
-                using var engine = new TesseractEngine(@"./tessdata", "jpn_vert", EngineMode.Default);
+                using var engine = new TesseractEngine(@"./Resources/tessdata", "jpn_vert", EngineMode.Default);
                 engine.DefaultPageSegMode = PageSegMode.SparseTextOsd; // Use SparseText for scattered entries
                 using var img = Pix.LoadFromFile(imagePath);
                 using var result = engine.Process(img);

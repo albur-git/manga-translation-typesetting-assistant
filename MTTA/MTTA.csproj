@@ -13,23 +13,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="tessdata\" />
+    <Folder Include="Resources\tessdata\" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="tessdata\eng.traineddata">
+    <None Update="Resources\tessdata\eng.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="tessdata\equ.traineddata">
+    <None Update="Resources\tessdata\equ.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="tessdata\jpn.traineddata">
+    <None Update="Resources\tessdata\jpn.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="tessdata\jpn_vert.traineddata">
+    <None Update="Resources\tessdata\jpn_vert.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="tessdata\osd.traineddata">
+    <None Update="Resources\tessdata\osd.traineddata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
