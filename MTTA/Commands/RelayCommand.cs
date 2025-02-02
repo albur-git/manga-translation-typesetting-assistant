@@ -9,25 +9,23 @@ namespace MTTA.Commands
 {
     public class RelayCommand : ICommand
     {
-        public event EventHandler? CanExecuteChanged;
+        private readonly Action<object> _execute;
+        private readonly Predicate<object> _canExecute;
 
-        private Action<object> _Execute { get; set; }
-        private Predicate<object> _CanExecute { get; set; }
-
-        public RelayCommand(Action<object> executeMethod, Predicate<object> canExecuteMethod)
+        public RelayCommand(Action<object> execute, Predicate<object> canExecute = null)
         {
-            _Execute = executeMethod;
-            _CanExecute = canExecuteMethod;
+            _execute = execute;
+            _canExecute = canExecute;
         }
 
-        public bool CanExecute(object? parameter)
-        {
-            return _CanExecute(parameter);
-        }
+        public bool CanExecute(object parameter) => _canExecute == null || _canExecute(parameter);
 
-        public void Execute(object? parameter)
+        public void Execute(object parameter) => _execute(parameter);
+
+        public event EventHandler CanExecuteChanged
         {
-            _Execute(parameter);
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
         }
     }
 }
