@@ -59,13 +59,32 @@
             </ListView>
         </Grid>
 
-        <Canvas Grid.Column="1" Name ="PageCanvas">
+        <Canvas Grid.Column="1" 
+                Name ="PageCanvas"
+                MouseDown="Canvas_MouseDown"
+                MouseMove="Canvas_MouseMove"
+                MouseUp="Canvas_MouseUp">
             <Image Source="{Binding PageImage, UpdateSourceTrigger=PropertyChanged}" 
                Stretch="Uniform"
                Width="{Binding ActualWidth, ElementName=PageCanvas}" 
                Height="{Binding ActualHeight, ElementName=PageCanvas}" 
                Canvas.Left="0" 
                Canvas.Top="0"/>
+
+            <ItemsControl Name="OcrAreasControl" ItemsSource="{Binding OcrAreas}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Rectangle />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
         </Canvas>
     </Grid>
 </Window>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Windows.Shapes;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -7,12 +8,15 @@ using Microsoft.Win32;
 using MTTA.Commands;
 using MTTA.Models;
 using MTTA.Views;
+using System.Windows.Media;
+using System.Windows.Controls;
 
 namespace MTTA.ViewModels
 {
     public class MainViewModel : ObservableViewModelBase
     {
         public ObservableCollection<TranslationEntry> TranslationEntries { get; set; }
+        public ObservableCollection<Rectangle> OcrAreas { get; set; }
         private BitmapImage _pageImage;
         public BitmapImage PageImage
         {
@@ -24,14 +28,36 @@ namespace MTTA.ViewModels
             }
         }
 
+        private Rectangle _selectedOcrArea;
+        public Rectangle SelectedOcrArea
+        {
+            get => _selectedOcrArea;
+            set {
+                // clear visual cue of old selection
+                if (_selectedOcrArea != null)
+                {
+                    _selectedOcrArea.Stroke = Brushes.Blue;
+                }
+                if (value != null)
+                {
+                    _selectedOcrArea = value;
+                    _selectedOcrArea.Stroke = Brushes.Red;
+                }
+            }
+        }
+
         public ICommand ShowAddTranslationWindowCommand { get; set; }
         public ICommand LoadPageImageCommand { get; set; }
+        public ICommand AddOcrAreaCommand { get; }
+        public ICommand DeleteSelectedOcrAreaCommand { get; }
 
         public MainViewModel()
         {
             TranslationEntries = TranslationEntryManager.GetTranslationEntries();
             ShowAddTranslationWindowCommand = new RelayCommand(ShowAddTranslationWindow, CanShowAddTranslationWindow);
             LoadPageImageCommand = new RelayCommand(LoadPageImage, CanLoadPageImage);
+            
+            OcrAreas = new ObservableCollection<Rectangle>();
         }
 
         private bool CanLoadPageImage(object obj)
@@ -69,6 +95,38 @@ namespace MTTA.ViewModels
             addTranslationEntryWindow.Owner = mainWindow;
             addTranslationEntryWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             addTranslationEntryWindow.Show();
+        }
+
+        public void AddOcrArea(Rectangle ocrArea)
+        {
+            ocrArea.Stroke = Brushes.Blue;
+            OcrAreas.Add(ocrArea);
+        }
+
+        public void DeleteOcrArea()
+        {
+            if (SelectedOcrArea != null)
+            {
+                OcrAreas.Remove(SelectedOcrArea);
+                SelectedOcrArea = null;
+            }
+        }
+
+        public bool ocrAreaExistsAtPositionAndIsSelected(Point position)
+        {
+            foreach (var ocrArea in OcrAreas)
+            {
+                // Check if the click is inside the bounds of the rectangle (ocrArea)
+                if (position.X >= Canvas.GetLeft(ocrArea) && position.X <= Canvas.GetLeft(ocrArea) + ocrArea.Width &&
+                    position.Y >= Canvas.GetTop(ocrArea) && position.Y <= Canvas.GetTop(ocrArea) + ocrArea.Height)
+                {
+                    // Set the clicked OCR area as the selected one
+                    SelectedOcrArea = ocrArea;
+
+                    return true; // Exit the loop after finding the first match
+                }
+            }
+            return false;
         }
     }
 }
